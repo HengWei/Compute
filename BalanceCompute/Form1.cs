@@ -76,9 +76,6 @@ namespace BalanceCompute
             {
                 textBox3.Text = textBox3.Text + Environment.NewLine + $"完成 路徑: {fileName}";
             }
-
-
-
         }
 
 
@@ -199,6 +196,72 @@ namespace BalanceCompute
             }
 
             return result;
+        }
+
+
+        public static IEnumerable<TotalTable> LoadTotalDetail(string filePath, out string message)
+        {
+            message = string.Empty;
+
+            List<TotalTable> result = new List<TotalTable>();
+
+            List<TotalDetail> detils = new List<TotalDetail>();
+
+            using (var wb = new XLWorkbook(filePath))
+            {
+                var ws = wb.Worksheet(1);
+
+                var lastRow = ws.LastRowUsed().RowNumber();
+
+                int j = 0;
+
+                for (int i = 2; i <= lastRow; i++)
+                {
+                    TotalDetail temp = new TotalDetail();
+
+                    string strD1Amount = ws.Cell(i, 2).Value.ToString() ?? string.Empty;
+
+                    decimal amount;
+
+                    if (decimal.TryParse(strD1Amount, out amount))
+                    {
+                        temp.D1Amount = amount;
+                    }
+                    else
+                    {
+                        message = $"第{i}列 總部大樓金額轉換異常";
+                        break;
+                    }
+
+                    string strD1Fee = ws.Cell(i, 3).Value.ToString() ?? string.Empty;
+
+                    if (decimal.TryParse(strD1Fee, out amount))
+                    {
+                        temp.D1Amount = amount;
+                    }
+                    else
+                    {
+                        message = $"第{i}列 總部大樓手續費轉換異常";
+                        break;
+                    }
+                    
+
+                    if(string.IsNullOrEmpty(ws.Cell(i, 8).Value.ToString()))
+                    {
+                        detils.Add(temp);
+                    }
+                    else
+                    {
+
+                    }
+
+                    
+                }
+            }
+
+            return result;
+
+
         }
 
         public static string GenerTable(IEnumerable<RawData> rawDatas, IEnumerable<Translation> transDatas, out string message)
@@ -388,6 +451,11 @@ namespace BalanceCompute
 
             string message = string.Empty;
 
+
+
+
+
+
             var path = GenerSystemFile(out message);
 
 
@@ -403,7 +471,11 @@ namespace BalanceCompute
 
         }
 
-
+        /// <summary>
+        /// 產生分錄
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public static string GenerSystemFile(out string message)
         {
             message = string.Empty;

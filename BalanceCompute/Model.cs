@@ -39,6 +39,29 @@ namespace BalanceCompute
         public DateTime Date { get; set; }
     }
 
+
+    public class TotalTable
+    {
+        public DateTime Paydate { get; set; }
+
+        public IEnumerable<TotalDetail> details { get; set; }
+    }
+
+    public class TotalDetail
+    {
+        public decimal D1Amount { get; set; }
+
+        public decimal D1Fee { get; set; }
+
+        public decimal D2Amount { get; set; }
+
+        public decimal D2Fee { get; set; }
+
+        public decimal D3Amount { get; set; }
+
+        public decimal D3Fee { get; set; }
+    }
+
     public class Translation
     {
         public DateTime Date { get; set; }
