@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Office2013.Word;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,6 +45,8 @@ namespace BalanceCompute
     {
         public DateTime Paydate { get; set; }
 
+        public string Payment { get; set; }
+
         public IEnumerable<TotalDetail> details { get; set; }
     }
 
@@ -60,6 +63,15 @@ namespace BalanceCompute
         public decimal D3Amount { get; set; }
 
         public decimal D3Fee { get; set; }
+    }
+
+    public class BankDetail
+    {
+        public DateTime PayDate { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public string Dep { get; set; }
     }
 
     public class Translation

@@ -1,4 +1,5 @@
 using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Drawing;
 using DocumentFormat.OpenXml.Vml.Spreadsheet;
 using System.Linq;
 using System.Windows.Forms;
@@ -203,6 +204,10 @@ namespace BalanceCompute
         {
             message = string.Empty;
 
+            string[] payment = new string[] { "銀行信用卡", "悠遊卡", "一卡通", "LINE PAY" };
+            int[] paymentStart = new int[] { 2, 11, 20, 29 };
+
+
             List<TotalTable> result = new List<TotalTable>();
 
             List<TotalDetail> detils = new List<TotalDetail>();
@@ -215,47 +220,192 @@ namespace BalanceCompute
 
                 int j = 0;
 
+
+                for (int k = 0; k < 1; k++)
+                {
+                    for (int i = 3; i <= lastRow; i++)
+                    {
+                        TotalDetail temp = new TotalDetail();
+
+                        string strD1Amount = ws.Cell(i, paymentStart[k]).Value.ToString() ?? string.Empty;
+
+                        decimal amount;
+
+                        //總部
+                        if (decimal.TryParse(strD1Amount, out amount))
+                        {
+                            temp.D1Amount = amount;
+                        }
+                        else
+                        {
+                            temp.D1Amount = 0;
+                        }
+
+                        string strD1Fee = ws.Cell(i, paymentStart[k] + 1).Value.ToString() ?? string.Empty;
+
+                        if (decimal.TryParse(strD1Fee, out amount))
+                        {
+                            temp.D1Fee = amount;
+                        }
+                        else
+                        {
+                            temp.D1Fee = 0;
+                        }
+
+                        //資策會
+
+                        string strD2Amount = ws.Cell(i, paymentStart[k] + 2).Value.ToString() ?? string.Empty;
+
+
+                        if (decimal.TryParse(strD2Amount, out amount))
+                        {
+                            temp.D2Amount = amount;
+                        }
+                        else
+                        {
+                            temp.D2Amount = 0;                           
+                            //break;
+                        }
+
+                        string strD2Fee = ws.Cell(i, paymentStart[k] + 3).Value.ToString() ?? string.Empty;
+
+                        if (decimal.TryParse(strD2Fee, out amount))
+                        {
+                            temp.D2Fee = amount;
+                        }
+                        else
+                        {
+                            temp.D2Fee = 0;                            
+                            //break;
+                        }
+
+                        //國票
+                        string strD3Amount = ws.Cell(i, paymentStart[k] + 4).Value.ToString() ?? string.Empty;
+
+
+                        if (decimal.TryParse(strD3Amount, out amount))
+                        {
+                            temp.D3Amount = amount;
+                        }
+                        else
+                        {
+                            temp.D3Amount = 0;
+                        }
+
+                        string strD3Fee = ws.Cell(i, paymentStart[k] + 5).Value.ToString() ?? string.Empty;
+
+                        if (decimal.TryParse(strD3Fee, out amount))
+                        {
+                            temp.D3Fee = amount;
+                        }
+                        else
+                        {
+                            temp.D3Fee = 0;
+
+                        }
+
+                        detils.Add(temp);
+
+                        string strDate = ws.Cell(i, paymentStart[k] + 6).Value.ToString() ?? string.Empty;
+
+                        if (string.IsNullOrEmpty(strDate))
+                        {
+
+
+                        }
+                        else
+                        {
+                            DateTime payDate;
+
+                            if (DateTime.TryParse(strDate, out payDate))
+                            {
+
+                            }
+                            else
+                            {
+                                message = $"第{i}列 付款日轉換異常";
+                                break;
+                            }
+
+
+                            result.Add(new TotalTable()
+                            {
+                                Paydate = payDate,
+                                Payment = payment[k],
+                                details = detils
+                            });
+
+                            //清空
+                            detils = new List<TotalDetail>();
+                        }
+                    }
+
+
+
+                }
+
+
+            }
+
+            return result;
+
+
+        }
+
+        public static IEnumerable<BankDetail> LoadBankDetail(string filePath, out string message)
+        {
+            message = string.Empty;
+
+            List<BankDetail> result = new List<BankDetail>();
+
+            using (var wb = new XLWorkbook(filePath))
+            {
+                var ws = wb.Worksheet(1);
+
+                var lastRow = ws.LastRowUsed().RowNumber();
+
+                int j = 0;
+
                 for (int i = 2; i <= lastRow; i++)
                 {
-                    TotalDetail temp = new TotalDetail();
+                    BankDetail temp = new BankDetail();
 
-                    string strD1Amount = ws.Cell(i, 2).Value.ToString() ?? string.Empty;
+                    string strDate = ws.Cell(i, 1).Value.ToString() ?? string.Empty;
 
-                    decimal amount;
 
-                    if (decimal.TryParse(strD1Amount, out amount))
+                    if (DateTime.TryParse(strDate, out DateTime payDate))
                     {
-                        temp.D1Amount = amount;
+                        temp.PayDate = payDate;
                     }
                     else
                     {
-                        message = $"第{i}列 總部大樓金額轉換異常";
+                        message = $"第{i}列 銀行匯入款 日期 轉換異常";
                         break;
                     }
 
-                    string strD1Fee = ws.Cell(i, 3).Value.ToString() ?? string.Empty;
+                    string strAmount = ws.Cell(i, 2).Value.ToString() ?? string.Empty;
 
-                    if (decimal.TryParse(strD1Fee, out amount))
+
+                    if (decimal.TryParse(strAmount, out decimal amount))
                     {
-                        temp.D1Amount = amount;
+                        temp.Amount = amount;
                     }
                     else
                     {
-                        message = $"第{i}列 總部大樓手續費轉換異常";
+                        message = $"第{i}列 銀行匯入款 金額 轉換異常";
                         break;
                     }
-                    
 
-                    if(string.IsNullOrEmpty(ws.Cell(i, 8).Value.ToString()))
+                    temp.Dep = ws.Cell(i, 3).Value.ToString() ?? string.Empty;
+
+                    if (string.IsNullOrEmpty(temp.Dep))
                     {
-                        detils.Add(temp);
+                        continue;
                     }
                     else
                     {
-
+                        result.Add(temp);
                     }
-
-                    
                 }
             }
 
@@ -264,6 +414,13 @@ namespace BalanceCompute
 
         }
 
+        /// <summary>
+        /// 總表產生
+        /// </summary>
+        /// <param name="rawDatas"></param>
+        /// <param name="transDatas"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public static string GenerTable(IEnumerable<RawData> rawDatas, IEnumerable<Translation> transDatas, out string message)
         {
             message = string.Empty;
@@ -442,7 +599,7 @@ namespace BalanceCompute
 
             if (fileResult == System.Windows.Forms.DialogResult.OK)
             {
-                textBox3.Text = openFileDialog1.FileName;
+                textBox4.Text = openFileDialog1.FileName;
             }
         }
 
@@ -452,20 +609,47 @@ namespace BalanceCompute
             string message = string.Empty;
 
 
-
-
-
-
-            var path = GenerSystemFile(out message);
+            //銀行匯入款
+            var bankDetails = LoadBankDetail(textBox5.Text, out message);
 
 
             if (string.IsNullOrEmpty(message) == false)
             {
                 textBox3.Text = textBox3.Text + Environment.NewLine + message;
+                return;
             }
             else
             {
-                textBox3.Text = textBox3.Text + Environment.NewLine + $"完成 路徑: {path}";
+                textBox3.Text = textBox3.Text + Environment.NewLine + $"匯入銀行匯入款完成";
+            }
+
+
+            //總表
+            var totoalDetails = LoadTotalDetail(textBox4.Text, out message);
+
+            if (string.IsNullOrEmpty(message) == false)
+            {
+                textBox3.Text = textBox3.Text + Environment.NewLine + message;
+                return;
+            }
+            else
+            {
+                textBox3.Text = textBox3.Text + Environment.NewLine + $"總表匯入款完成";
+            }
+
+            //產生系統檔
+            GenerSystemFile(totoalDetails, bankDetails, out message);
+
+
+            if (string.IsNullOrEmpty(message) == false)
+            {
+                textBox3.Text = textBox3.Text + Environment.NewLine + message;
+                return;
+
+            }
+            else
+            {
+                textBox3.Text = textBox3.Text + Environment.NewLine + $"完成";
             }
 
 
@@ -476,7 +660,7 @@ namespace BalanceCompute
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public static string GenerSystemFile(out string message)
+        public static void GenerSystemFile(IEnumerable<TotalTable> totalDetails, IEnumerable<BankDetail> bankDetails, out string message)
         {
             message = string.Empty;
 
@@ -508,32 +692,34 @@ namespace BalanceCompute
             //    , rawDatas.OrderBy(x => x.Date).FirstOrDefault().Date.ToString("MMdd")
             //    , rawDatas.OrderByDescending(x => x.Date).FirstOrDefault().Date.ToString("MMdd"));
 
-            string dateFormat = "TEST";
+            
 
-            string fileName = AppDomain.CurrentDomain.BaseDirectory + $"分錄{dateFormat}.xlsx";
 
-            using (var wb = new XLWorkbook())
+            foreach (var bankDetail in bankDetails.GroupBy(x=>x.PayDate).OrderBy(x=>x.Key))
             {
-                var ws = wb.AddWorksheet(dateFormat);
+                string fileName = AppDomain.CurrentDomain.BaseDirectory + $"分錄{bankDetail.Key.ToString("MMdd")}.xlsx";
 
-                int row = 0;
-
-                int col = 0;
-
-
-                ws.Cell(++row, ++col).SetValue("上傳一般日記帳分錄");
-                ws.Cell(++row, col).SetValue("// To add field columns to the template, please add technical names.");
-                ws.Cell(row, col).Style.Alignment.WrapText = false;
-                ws.Cell(++row, col).SetValue("// For a complete list of field columns and their technical names, choose ?in the right upper corner of the app screen and then view the Browseentry of web assistance.\r\n");
-                ws.Cell(row, col).Style.Alignment.WrapText = false;              
-                ws.Cell(++row, col).SetValue("批次 ID");
-                ws.Range(row, col, row, col + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(255, 192, 0);
-                
-
-                for (int i = 0; i < 2; i++)
+                using (var wb = new XLWorkbook())
                 {
-                    ws.Cell(row += 3, 1).SetValue(i+1);
-                    ws.Cell(row , 2).SetValue("表頭");
+                    var ws = wb.AddWorksheet(bankDetail.Key.ToString("MMdd"));
+
+                    int row = 0;
+
+                    int col = 0;
+
+
+                    ws.Cell(++row, ++col).SetValue("上傳一般日記帳分錄");
+                    ws.Cell(++row, col).SetValue("// To add field columns to the template, please add technical names.");
+                    ws.Cell(row, col).Style.Alignment.WrapText = false;
+                    ws.Cell(++row, col).SetValue("// For a complete list of field columns and their technical names, choose ?in the right upper corner of the app screen and then view the Browseentry of web assistance.\r\n");
+                    ws.Cell(row, col).Style.Alignment.WrapText = false;
+                    ws.Cell(++row, col).SetValue("批次 ID");
+                    ws.Range(row, col, row, col + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(255, 192, 0);
+
+
+
+                    ws.Cell(row += 3, 1).SetValue(1);
+                    ws.Cell(row, 2).SetValue("表頭");
                     ws.Range(row, 1, row, 20).Style.Fill.BackgroundColor = XLColor.FromArgb(142, 169, 219);
 
                     col = 1;
@@ -545,16 +731,25 @@ namespace BalanceCompute
                     {
                         ws.Cell(row, ++col).SetValue(title1[k]);
 
-                        ws.Cell(row+1, col).SetValue(title2[k]);
+                        ws.Cell(row + 1, col).SetValue(title2[k]);
 
                     }
 
-                    ws.Range(row, 2, row, title1.Length+1).Style.Fill.BackgroundColor = XLColor.FromArgb(237, 241, 249);
-                    ws.Range(row+1, 2, row+1, title1.Length + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(237, 241, 249);
+                    ws.Range(row, 2, row, title1.Length + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(237, 241, 249);
+                    ws.Range(row + 1, 2, row + 1, title1.Length + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(237, 241, 249);
 
-
+                    ++row;
                     //資料列
-                    row+=2;
+                    col = 1;
+                    ws.Cell(++row, ++col).SetValue(1300);
+                    ws.Cell(row, ++col).SetValue("SA");
+                    ws.Cell(row, ++col).SetValue(bankDetail.Key);
+                    ws.Cell(row, col).Style.DateFormat.Format = "yyyy/MM/dd";
+                    ws.Cell(row, ++col).SetValue(bankDetail.Key);
+                    ws.Cell(row, col).Style.DateFormat.Format = "yyyy/MM/dd";
+                    ws.Cell(row, ++col).SetValue(1);
+                    ws.Cell(row, ++col).SetValue("信用卡匯入款");
+                    ws.Cell(row, ++col).SetValue("TWD");   
 
                     //空一行
                     ++row;
@@ -578,16 +773,110 @@ namespace BalanceCompute
                     ws.Range(row, 2, row, detailTitel1.Length + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(237, 241, 249);
                     ws.Range(row + 1, 2, row + 1, detailTitel1.Length + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(237, 241, 249);
 
+                    ++row;
                     //資料列
+                    foreach (var b in bankDetails.Where(x=>x.PayDate==bankDetail.Key))
+                    {
+                        col = 1;
+                        ws.Cell(++row, ++col).SetValue(1300);
+                        ws.Cell(row, ++col).SetValue(1103031);
+                        ws.Cell(row, ++col).SetValue("刷卡機匯入款");
+                        ws.Cell(row, ++col).SetValue(b.Amount);
 
-                }                
+                        col = 1;
+                        ws.Cell(++row, ++col).SetValue(1300);
+                        ws.Cell(row, ++col).SetValue(1172010);
+                        ws.Cell(row, ++col).SetValue("刷卡機匯入款");
+                        ws.Cell(row, 6).SetValue(b.Amount);
+                        ws.Cell(row, 12).SetValue(b.Dep);
+                    }
 
-                wb.SaveAs(fileName);
+
+
+
+
+                    for (int i = 0; i < 1; i++)
+                    {
+
+                        var data = totalDetails.FirstOrDefault(x => x.Paydate == bankDetail.Key && x.Payment == payment[i]);
+
+                        if(data==null)
+                        {
+                            continue;
+                        }
+
+                        col = 1;
+                        ws.Cell(++row, ++col).SetValue(1300);
+                        ws.Cell(row, ++col).SetValue(1172010);
+                        ws.Cell(row, ++col).SetValue("取餐櫃信用卡匯入款");
+
+                        var total1 = data.details.Sum(x => x.D1Amount) - data.details.Sum(x => x.D1Fee);
+
+                        ws.Cell(row, 6).SetValue(total1);
+                        ws.Cell(row, 12).SetValue(131510);
+
+                        col = 1;
+                        ws.Cell(++row, ++col).SetValue(1300);
+                        ws.Cell(row, ++col).SetValue(1172010);
+                        ws.Cell(row, ++col).SetValue("取餐櫃信用卡匯入款");
+
+                        var total2 = data.details.Sum(x => x.D2Amount) - data.details.Sum(x => x.D2Fee);
+
+                        ws.Cell(row, 6).SetValue(total2);
+                        ws.Cell(row, 12).SetValue(131530);
+
+
+                        col = 1;
+                        ws.Cell(++row, ++col).SetValue(1300);
+                        ws.Cell(row, ++col).SetValue(1172010);
+                        ws.Cell(row, ++col).SetValue("取餐櫃信用卡匯入款");
+
+                        var total3 = data.details.Sum(x => x.D3Amount) - data.details.Sum(x => x.D3Fee);
+
+                        ws.Cell(row, 6).SetValue(total3);
+                        ws.Cell(row, 12).SetValue(131520);
+
+
+                        col = 1;
+                        ws.Cell(++row, ++col).SetValue(1300);
+                        ws.Cell(row, ++col).SetValue(1103011);
+                        ws.Cell(row, ++col).SetValue("取餐櫃信用卡匯入款");
+
+
+                        ws.Cell(row, 5).SetValue(total1+ total2+ total3);
+                        ws.Cell(row, 12).SetValue(131510);
+
+                    }
+
+
+
+
+                    wb.SaveAs(fileName);
+                }
+
+
             }
 
-            return fileName;
+
+
+            return;
 
         }
 
+        private void button6_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog()
+            {
+                DefaultExt = "xlsx",
+                Filter = "Excel File (*.xlsx)|*.xlsx"
+            };
+
+            var fileResult = openFileDialog1.ShowDialog();
+
+            if (fileResult == System.Windows.Forms.DialogResult.OK)
+            {
+                textBox5.Text = openFileDialog1.FileName;
+            }
+        }
     }
 }

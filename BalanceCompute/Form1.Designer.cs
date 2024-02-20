@@ -43,6 +43,9 @@
             label3 = new Label();
             textBox4 = new TextBox();
             button4 = new Button();
+            label4 = new Label();
+            textBox5 = new TextBox();
+            button6 = new Button();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             SuspendLayout();
@@ -52,7 +55,7 @@
             label1.AutoSize = true;
             label1.Location = new Point(22, 42);
             label1.Name = "label1";
-            label1.Size = new Size(72, 15);
+            label1.Size = new Size(67, 15);
             label1.TabIndex = 0;
             label1.Text = "匯入明細檔";
             label1.Click += label1_Click;
@@ -80,10 +83,10 @@
             // 
             // textBox3
             // 
-            textBox3.Location = new Point(24, 397);
+            textBox3.Location = new Point(24, 442);
             textBox3.Multiline = true;
             textBox3.Name = "textBox3";
-            textBox3.Size = new Size(667, 258);
+            textBox3.Size = new Size(667, 213);
             textBox3.TabIndex = 7;
             // 
             // button3
@@ -118,7 +121,7 @@
             label2.AutoSize = true;
             label2.Location = new Point(22, 98);
             label2.Name = "label2";
-            label2.Size = new Size(59, 15);
+            label2.Size = new Size(55, 15);
             label2.TabIndex = 9;
             label2.Text = "銀行交易";
             // 
@@ -140,20 +143,23 @@
             // 
             // groupBox2
             // 
+            groupBox2.Controls.Add(label4);
+            groupBox2.Controls.Add(textBox5);
+            groupBox2.Controls.Add(button6);
             groupBox2.Controls.Add(button5);
             groupBox2.Controls.Add(label3);
             groupBox2.Controls.Add(textBox4);
             groupBox2.Controls.Add(button4);
             groupBox2.Location = new Point(24, 227);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(667, 155);
+            groupBox2.Size = new Size(667, 194);
             groupBox2.TabIndex = 13;
             groupBox2.TabStop = false;
             groupBox2.Text = "分錄產出";
             // 
             // button5
             // 
-            button5.Location = new Point(568, 87);
+            button5.Location = new Point(568, 142);
             button5.Name = "button5";
             button5.Size = new Size(75, 46);
             button5.TabIndex = 9;
@@ -166,7 +172,7 @@
             label3.AutoSize = true;
             label3.Location = new Point(22, 45);
             label3.Name = "label3";
-            label3.Size = new Size(85, 15);
+            label3.Size = new Size(79, 15);
             label3.TabIndex = 6;
             label3.Text = "匯入交易總表";
             // 
@@ -186,6 +192,32 @@
             button4.Text = "匯入";
             button4.UseVisualStyleBackColor = true;
             button4.Click += button4_Click;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(23, 89);
+            label4.Name = "label4";
+            label4.Size = new Size(91, 15);
+            label4.TabIndex = 10;
+            label4.Text = "匯入銀行匯入款";
+            // 
+            // textBox5
+            // 
+            textBox5.Location = new Point(114, 86);
+            textBox5.Name = "textBox5";
+            textBox5.Size = new Size(436, 23);
+            textBox5.TabIndex = 11;
+            // 
+            // button6
+            // 
+            button6.Location = new Point(569, 85);
+            button6.Name = "button6";
+            button6.Size = new Size(75, 23);
+            button6.TabIndex = 12;
+            button6.Text = "匯入";
+            button6.UseVisualStyleBackColor = true;
+            button6.Click += button6_Click;
             // 
             // Form1
             // 
@@ -222,5 +254,8 @@
         private TextBox textBox4;
         private Button button4;
         private Button button5;
+        private Label label4;
+        private TextBox textBox5;
+        private Button button6;
     }
 }
